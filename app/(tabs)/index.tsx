@@ -1,59 +1,29 @@
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
-import { useUser } from '@/context/UserContext';
-import BudgetDisplay from '@/components/BudgetDisplay';
-import RecentExpenses from '@/components/RecentExpenses';
-import { useTheme } from '@/context/ThemeContext';
-import EmptyBudgetState from '@/components/EmptyBudgetState';
+import { StyleSheet, View, Text } from 'react-native';
 
-export default function BudgetScreen() {
-  const { currentUser, getUserBudget, getRecentExpenses } = useUser();
-  const { colors, fonts } = useTheme();
-
-  const budget = getUserBudget();
-  const recentExpenses = getRecentExpenses(5); // Get 5 most recent expenses
-
-  if (!budget || budget.amount === 0) {
-    return <EmptyBudgetState />;
-  }
-
+export default function HomeScreen() {
   return (
-    <ScrollView 
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.contentContainer}
-    >
-      <Text style={[styles.greeting, { color: colors.text, fontFamily: fonts.bold }]}>
-        Hello, {currentUser?.name}!
-      </Text>
-      
-      <BudgetDisplay budget={budget} />
-      
-      <View style={styles.recentContainer}>
-        <Text style={[styles.sectionTitle, { color: colors.text, fontFamily: fonts.medium }]}>
-          Recent Expenses
-        </Text>
-        <RecentExpenses expenses={recentExpenses} />
-      </View>
-    </ScrollView>
+    <View style={styles.container}>
+      <Text style={styles.title}>Welcome to Expo!</Text>
+      <Text style={styles.subtitle}>Start building your next great app</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  contentContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 20,
-    paddingTop: 40,
   },
-  greeting: {
-    fontSize: 24,
-    marginBottom: 24,
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
-  recentContainer: {
-    marginTop: 32,
-  },
-  sectionTitle: {
+  subtitle: {
     fontSize: 18,
-    marginBottom: 16,
+    color: '#666',
+    textAlign: 'center',
   },
 });
