@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, Animated } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, Animated, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useUser } from '@/context/UserContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -8,6 +8,7 @@ import { formatCurrency } from '@/utils/formatters';
 import { Check } from 'lucide-react-native';
 
 export default function ExpenseForm() {
+  const [isVisible, setIsVisible] = useState(true);
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
@@ -69,80 +70,99 @@ export default function ExpenseForm() {
   });
 
   return (
-    <View style={styles.container}>
-      <QuickExpenseButtons 
-        onSelect={handleQuickExpenseSelect} 
-        selectedCategory={category}
-      />
-      
-      <View style={styles.formGroup}>
-        <Text style={[styles.label, { color: colors.text, fontFamily: fonts.semiBold }]}>
-          Amount *
-        </Text>
-        <View style={[
-          styles.amountInputContainer,
-          { backgroundColor: colors.card, borderColor: colors.border }
-        ]}>
-          <Text style={[styles.currencySymbol, { color: colors.text, fontFamily: fonts.regular }]}>
-            {currentUser?.currency.symbol}
-          </Text>
-          <TextInput
-            style={[styles.amountInput, { color: colors.text, fontFamily: fonts.regular }]}
-            placeholder="0.00"
-            placeholderTextColor={colors.textSecondary}
-            keyboardType="numeric"
-            value={amount}
-            onChangeText={setAmount}
+    <Modal
+      visible={isVisible}
+      animationType="slide"
+      transparent={true}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={[styles.container, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
+      >
+        <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
+          <QuickExpenseButtons 
+            onSelect={handleQuickExpenseSelect} 
+            selectedCategory={category}
           />
-        </View>
-      </View>
-      
-      <View style={styles.formGroup}>
-        <Text style={[styles.label, { color: colors.text, fontFamily: fonts.semiBold }]}>
-          Description
-        </Text>
-        <TextInput
-          style={[
-            styles.input, 
-            { backgroundColor: colors.card, color: colors.text, borderColor: colors.border, fontFamily: fonts.regular }
-          ]}
-          placeholder="What was this expense for?"
-          placeholderTextColor={colors.textSecondary}
-          value={description}
-          onChangeText={setDescription}
-        />
-      </View>
-      
-      {budget && (
-        <View style={styles.budgetInfo}>
-          <Text style={[styles.budgetText, { color: colors.textSecondary, fontFamily: fonts.regular }]}>
-            Your remaining budget: {formatCurrency(budget.amount - budget.spent, currentUser?.currency)}
-          </Text>
-        </View>
-      )}
-      
-      <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-        <TouchableOpacity
-          style={[styles.submitButton, { backgroundColor: colors.primary }]}
-          onPress={handleSubmit}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <Check size={24} color={colors.white} />
-          ) : (
-            <Text style={[styles.submitButtonText, { color: colors.white, fontFamily: fonts.semiBold }]}>
-              Add Expense
+          
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: colors.text, fontFamily: fonts.semiBold }]}>
+              Amount *
             </Text>
+            <View style={[
+              styles.amountInputContainer,
+              { backgroundColor: colors.card, borderColor: colors.border }
+            ]}>
+              <Text style={[styles.currencySymbol, { color: colors.text, fontFamily: fonts.regular }]}>
+                {currentUser?.currency.symbol}
+              </Text>
+              <TextInput
+                style={[styles.amountInput, { color: colors.text, fontFamily: fonts.regular }]}
+                placeholder="0.00"
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="numeric"
+                value={amount}
+                onChangeText={setAmount}
+              />
+            </View>
+          </View>
+          
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: colors.text, fontFamily: fonts.semiBold }]}>
+              Description
+            </Text>
+            <TextInput
+              style={[
+                styles.input, 
+                { backgroundColor: colors.card, color: colors.text, borderColor: colors.border, fontFamily: fonts.regular }
+              ]}
+              placeholder="What was this expense for?"
+              placeholderTextColor={colors.textSecondary}
+              value={description}
+              onChangeText={setDescription}
+            />
+          </View>
+          
+          {budget && (
+            <View style={styles.budgetInfo}>
+              <Text style={[styles.budgetText, { color: colors.textSecondary, fontFamily: fonts.regular }]}>
+                Your remaining budget: {formatCurrency(budget.amount - budget.spent, currentUser?.currency)}
+              </Text>
+            </View>
           )}
-        </TouchableOpacity>
-      </Animated.View>
-    </View>
+          
+          <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+            <TouchableOpacity
+              style={[styles.submitButton, { backgroundColor: colors.primary }]}
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <Check size={24} color={colors.white} />
+              ) : (
+                <Text style={[styles.submitButtonText, { color: colors.white, fontFamily: fonts.semiBold }]}>
+                  Add Expense
+                </Text>
+              )}
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 16,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '90%',
+    maxWidth: 400,
+    borderRadius: 16,
+    padding: 24,
   },
   formGroup: {
     marginBottom: 20,
