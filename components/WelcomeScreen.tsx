@@ -6,6 +6,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { CurrencyOption } from '@/types';
 import CurrencySelector from './CurrencySelector';
 import { DollarSign } from 'lucide-react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function WelcomeScreen() {
   const [name, setName] = useState('');
@@ -16,7 +17,7 @@ export default function WelcomeScreen() {
   const [showAccountSelector, setShowAccountSelector] = useState(false);
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [budget, setBudget] = useState('');
-  const { createUser, users, setCurrentUser } = useUser();
+  const { createUser, users, setCurrentUser, updateBudget } = useUser();
   const router = useRouter();
   const { colors, fonts } = useTheme();
 
@@ -28,8 +29,12 @@ export default function WelcomeScreen() {
 
   const handleFinish = () => {
     if (name.trim() && budget) {
-      createUser(name, selectedCurrency);
-      router.replace('/(tabs)');
+      const budgetAmount = parseFloat(budget);
+      if (!isNaN(budgetAmount)) {
+        const userId = createUser(name, selectedCurrency);
+        updateBudget(budgetAmount);
+        router.replace('/(tabs)');
+      }
     }
   };
 
@@ -39,117 +44,122 @@ export default function WelcomeScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1 }}
-    >
-      <ScrollView 
-        style={[styles.container, { backgroundColor: colors.background }]}
-        contentContainerStyle={styles.contentContainer}
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
       >
-        <View style={styles.animationContainer}>
-          <DollarSign size={64} color={colors.primary} />
-        </View>
-        
-        <Text style={[styles.title, { color: colors.text, fontFamily: fonts.bold }]}>
-          Budget Helper
-        </Text>
-        
-        <Text style={[styles.subtitle, { color: colors.textSecondary, fontFamily: fonts.regular }]}>
-          Budgeting for real life, made easy
-        </Text>
-        
-        {!showAccountSelector ? (
-          <View style={styles.formContainer}>
-            <Text style={[styles.label, { color: colors.text, fontFamily: fonts.medium }]}>
-              Your Name
-            </Text>
-            <TextInput
-              style={[
-                styles.input, 
-                { 
-                  backgroundColor: colors.card,
-                  color: colors.text,
-                  borderColor: colors.border,
-                  fontFamily: fonts.regular
-                }
-              ]}
-              placeholder="Enter your name"
-              placeholderTextColor={colors.textSecondary}
-              value={name}
-              onChangeText={setName}
-            />
-            
-            <Text style={[styles.label, { color: colors.text, fontFamily: fonts.medium, marginTop: 16 }]}>
-              Currency
-            </Text>
-            <CurrencySelector
-              selectedCurrency={selectedCurrency}
-              onSelect={setSelectedCurrency}
-            />
-            
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: colors.primary }]}
-              onPress={handleContinue}
-              disabled={!name.trim()}
-            >
-              <Text style={[styles.buttonText, { color: colors.white, fontFamily: fonts.medium }]}>
-                Continue
-              </Text>
-            </TouchableOpacity>
-            
-            {users.length > 0 && (
-              <TouchableOpacity
-                style={styles.switchAccount}
-                onPress={() => setShowAccountSelector(true)}
-              >
-                <Text style={[styles.switchAccountText, { color: colors.primary, fontFamily: fonts.medium }]}>
-                  Switch to an existing account
-                </Text>
-              </TouchableOpacity>
-            )}
+        <ScrollView 
+          style={[styles.container, { backgroundColor: colors.background }]}
+          contentContainerStyle={styles.contentContainer}
+        >
+          <View style={styles.animationContainer}>
+            <DollarSign size={64} color={colors.primary} />
           </View>
-        ) : (
-          <View style={styles.accountsContainer}>
-            <Text style={[styles.label, { color: colors.text, fontFamily: fonts.medium }]}>
-              Select an Account
-            </Text>
-            
-            {users.map(user => (
-              <TouchableOpacity
-                key={user.id}
+          
+          <Text style={[styles.title, { color: colors.text, fontFamily: fonts.bold }]}>
+            Budget Helper
+          </Text>
+          
+          <Text style={[styles.subtitle, { color: colors.textSecondary, fontFamily: fonts.regular }]}>
+            Budgeting for real life, made easy
+          </Text>
+          
+          {!showAccountSelector ? (
+            <View style={styles.formContainer}>
+              <Text style={[styles.label, { color: colors.text, fontFamily: fonts.medium }]}>
+                Your Name
+              </Text>
+              <TextInput
                 style={[
-                  styles.accountItem, 
-                  { backgroundColor: colors.card, borderColor: colors.border }
+                  styles.input, 
+                  { 
+                    backgroundColor: colors.card,
+                    color: colors.text,
+                    borderColor: colors.border,
+                    fontFamily: fonts.regular
+                  }
                 ]}
-                onPress={() => handleSelectExistingAccount(user.id)}
+                placeholder="Enter your name"
+                placeholderTextColor={colors.textSecondary}
+                value={name}
+                onChangeText={setName}
+              />
+              
+              <Text style={[styles.label, { color: colors.text, fontFamily: fonts.medium, marginTop: 16 }]}>
+                Currency
+              </Text>
+              <CurrencySelector
+                selectedCurrency={selectedCurrency}
+                onSelect={setSelectedCurrency}
+              />
+              
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: colors.primary }]}
+                onPress={handleContinue}
+                disabled={!name.trim()}
               >
-                <Text style={[styles.accountName, { color: colors.text, fontFamily: fonts.medium }]}>
-                  {user.name}
-                </Text>
-                <Text style={[styles.accountCurrency, { color: colors.textSecondary, fontFamily: fonts.regular }]}>
-                  {user.currency.code}
+                <Text style={[styles.buttonText, { color: colors.white, fontFamily: fonts.medium }]}>
+                  Continue
                 </Text>
               </TouchableOpacity>
-            ))}
-            
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: colors.primary, marginTop: 20 }]}
-              onPress={() => setShowAccountSelector(false)}
-            >
-              <Text style={[styles.buttonText, { color: colors.white, fontFamily: fonts.medium }]}>
-                Create New Account
+              
+              {users.length > 0 && (
+                <TouchableOpacity
+                  style={styles.switchAccount}
+                  onPress={() => setShowAccountSelector(true)}
+                >
+                  <Text style={[styles.switchAccountText, { color: colors.primary, fontFamily: fonts.medium }]}>
+                    Switch to an existing account
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
+            <View style={styles.accountsContainer}>
+              <Text style={[styles.label, { color: colors.text, fontFamily: fonts.medium }]}>
+                Select an Account
               </Text>
-            </TouchableOpacity>
-          </View>
-        )}
+              
+              {users.map(user => (
+                <TouchableOpacity
+                  key={user.id}
+                  style={[
+                    styles.accountItem, 
+                    { backgroundColor: colors.card, borderColor: colors.border }
+                  ]}
+                  onPress={() => handleSelectExistingAccount(user.id)}
+                >
+                  <Text style={[styles.accountName, { color: colors.text, fontFamily: fonts.medium }]}>
+                    {user.name}
+                  </Text>
+                  <Text style={[styles.accountCurrency, { color: colors.textSecondary, fontFamily: fonts.regular }]}>
+                    {user.currency.code}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+              
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: colors.primary, marginTop: 20 }]}
+                onPress={() => setShowAccountSelector(false)}
+              >
+                <Text style={[styles.buttonText, { color: colors.white, fontFamily: fonts.medium }]}>
+                  Create New Account
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
 
         <Modal
           visible={showBudgetModal}
           transparent={true}
           animationType="slide"
         >
-          <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.modalOverlay}
+          >
             <View style={[styles.modalContent, { backgroundColor: colors.background }]}>
               <Text style={[styles.modalTitle, { color: colors.text, fontFamily: fonts.bold }]}>
                 Set Monthly Budget
@@ -198,10 +208,10 @@ export default function WelcomeScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </Modal>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </GestureHandlerRootView>
   );
 }
 
@@ -288,6 +298,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
     width: '90%',

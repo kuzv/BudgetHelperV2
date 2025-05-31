@@ -6,7 +6,7 @@ import { generateId } from '@/utils/helpers';
 type UserContextType = {
   users: User[];
   currentUser: User | null;
-  createUser: (name: string, currency: CurrencyOption) => void;
+  createUser: (name: string, currency: CurrencyOption) => string;
   updateUser: (user: User) => void;
   deleteUser: (userId: string) => void;
   setCurrentUser: (userId: string) => void;
@@ -72,7 +72,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     saveData();
   }, [users, budgets, expenses, currentUser]);
 
-  const createUser = (name: string, currency: CurrencyOption) => {
+  const createUser = (name: string, currency: CurrencyOption): string => {
     const newUser: User = {
       id: generateId(),
       name,
@@ -81,6 +81,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     
     setUsers(prevUsers => [...prevUsers, newUser]);
     setCurrentUserState(newUser);
+    return newUser.id;
   };
 
   const updateUser = (user: User) => {
