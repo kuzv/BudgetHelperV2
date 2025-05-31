@@ -1,16 +1,18 @@
 import { Tabs } from 'expo-router';
 import { Chrome as Home, CirclePlus as PlusCircle, Clock, Settings } from 'lucide-react-native';
-import { useColorScheme, Platform } from 'react-native';
+import { useColorScheme, Platform, Dimensions } from 'react-native';
 import Colors from '@/constants/Colors';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { height } = Dimensions.get('window');
 
-  // Significantly increased bottom padding for Android
-  const bottomPadding = Platform.select({
+  // Calculate safe area for different devices and platforms
+  const safeAreaBottom = Platform.select({
     ios: 34,
-    android: 64, // Further increased to ensure no overlap
+    // For Android, use a percentage of screen height to ensure proper spacing
+    android: Math.round(height * 0.08),
     default: 16,
   });
 
@@ -20,9 +22,14 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarStyle: {
-          height: Platform.select({ ios: 88, android: 88, default: 60 }), // Increased height for Android
+          height: Platform.select({ 
+            ios: 88,
+            // Taller tab bar for Android to avoid system navigation
+            android: Math.round(height * 0.1),
+            default: 60 
+          }),
           paddingTop: 8,
-          paddingBottom: bottomPadding,
+          paddingBottom: safeAreaBottom,
           backgroundColor: colors.background,
           borderTopColor: colors.border,
           borderTopWidth: 1,
@@ -31,6 +38,11 @@ export default function TabLayout() {
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 3,
+          // Position tab bar above system navigation
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
         },
         headerStyle: {
           backgroundColor: colors.background,
